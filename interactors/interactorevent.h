@@ -1,0 +1,88 @@
+#ifndef YEVENTDATA_H
+#define YEVENTDATA_H
+
+#include "core/object/ref_counted.h"
+#include "core/templates/hash_map.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
+#include "scene/scene_string_names.h"
+
+class InteractorEvent : public RefCounted {
+    GDCLASS(InteractorEvent, RefCounted);
+
+private:
+    struct RegEventCallbackInstance {
+        ObjectID node_inst_id;
+        Callable callable;
+        int priority;
+        RegEventCallbackInstance() : node_inst_id(), callable(), priority(50) {}
+        RegEventCallbackInstance(ObjectID node_inst_id, const Callable &p_callable, int p_priority) 
+            : node_inst_id(node_inst_id), callable(p_callable), priority(p_priority) {}
+    };
+
+    struct RegEventCallback {
+        int event_id;
+        Vector<RegEventCallbackInstance> callbacks;
+        RegEventCallback() : event_id(0) {}
+        explicit RegEventCallback(int p_event_id) : event_id(p_event_id) {}
+    };
+
+    static HashMap<int, RegEventCallback> reg_event_callbacks;
+    static HashMap<ObjectID, int> count_node_callbacks;
+    static HashMap<int, String> parameter_names;
+    static HashMap<int, String> event_id_names;
+    static void set_parameter_name_dictionary(const Dictionary &p_dict);
+    static void set_event_id_name_dictionary(const Dictionary &p_dict);
+
+    HashMap<int, Variant> data;
+    int event_type;
+    static void _node_exiting_tree(Node *p_node);
+    static void _clean_invalid_callables(int p_event_id);
+    static void _sort_event_callbacks(int p_event_id);
+    struct YEventDataPriorityCompare {
+		_FORCE_INLINE_ bool operator()(const RegEventCallbackInstance& a, const RegEventCallbackInstance& b) const {
+			return a.priority < b.priority;
+		}
+	};
+protected:
+    static void _bind_methods();
+
+public:
+    InteractorEvent();
+
+    Ref<InteractorEvent> set_event_type(int p_type);
+    int get_event_type() const;
+
+    bool failed = false;
+    void set_failed(bool p_failed) { failed = p_failed; }
+    bool get_failed() const { return failed; }
+
+    bool has_value(int p_identifier) const;
+    Variant get_value(int p_identifier, const Variant &p_default = Variant()) const;
+    Ref<InteractorEvent> set_value(int p_identifier, const Variant &p_value);
+    Ref<InteractorEvent> increment_value(int p_identifier, const Variant &p_amount);
+    Ref<InteractorEvent> multiply_value(int p_identifier, const Variant &p_amount);
+
+    bool is_event_type(int p_type) const;
+    Dictionary get_data_as_dictionary() const;
+    Ref<InteractorEvent> set_data_from_dictionary(const Dictionary &p_dict);
+    Ref<InteractorEvent> add_data_from_dictionary(const Dictionary &p_dict);
+
+    Ref<InteractorEvent> emit() const;
+    Ref<InteractorEvent> emit_to_node(Node *p_node) const;
+
+    static void register_listener(int p_event_id, const Callable &p_callable, int p_priority = 50);
+    static void unregister_listener(int p_event_id, const Callable &p_callable);
+    static void register_listener_with_node(Node *p_node, int p_event_id, const Callable &p_callable, int p_priority = 50);
+    static void unregister_listener_with_node(Node *p_node, int p_event_id, const Callable &p_callable);
+    static void clear_node_callbacks(Node *p_node);
+    static Ref<InteractorEvent> create(int with_type, int parameter_one, Variant value_one);
+    static Ref<InteractorEvent> create_and_send(int with_type, int parameter_one, Variant value_one);
+    static Ref<InteractorEvent> create_and_send_to_node(Node *p_node, int with_type, int parameter_one, Variant value_one);
+
+	virtual String to_string() override;
+
+    Ref<InteractorEvent> duplicate() const;
+};
+
+#endif // YEVENTDATA_H

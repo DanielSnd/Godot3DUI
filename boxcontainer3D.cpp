@@ -668,23 +668,20 @@ BoxContainer3D::LayoutAxis BoxContainer3D::get_layout_axis() const {
     return layout_axis;
 }
 
-Ref<YTweenWrap> BoxContainer3D::animated_free_child(Node3D* child, Vector3 exiting_offset, float duration) {
-    if (!child) return Ref<YTweenWrap>();
+Ref<Tween> BoxContainer3D::animated_free_child(Node3D* child, Vector3 exiting_offset, float duration) {
+    if (!child) return Ref<Tween>();
     
-    if (YTween::get_singleton() != nullptr) {
-        auto new_tween = YTween::get_singleton()->create_unique_tween(child);
-        new_tween->set_parallel(true);
+    auto new_tween = create_tween();
+    new_tween->set_parallel(true);
 #ifdef YGODOT
-        new_tween->tween_property(child, NodePath("position"), child->get_position() + exiting_offset, duration)->set_ease(tween_ease_type)->set_trans(tween_transition_type, tween_overshoot);
-        new_tween->tween_property(child, NodePath("modulate"), Color(1.0, 1.0, 1.0, 0.0), duration)->set_ease(tween_ease_type)->set_trans(tween_transition_type, tween_overshoot);
+    new_tween->tween_property(child, NodePath("position"), child->get_position() + exiting_offset, duration)->set_ease(tween_ease_type)->set_trans(tween_transition_type, tween_overshoot);
+    new_tween->tween_property(child, NodePath("modulate"), Color(1.0, 1.0, 1.0, 0.0), duration)->set_ease(tween_ease_type)->set_trans(tween_transition_type, tween_overshoot);
 #else
-        new_tween->tween_property(child, NodePath("position"), child->get_position() + exiting_offset, duration)->set_ease(tween_ease_type)->set_trans(tween_transition_type);
-        new_tween->tween_property(child, NodePath("modulate"), Color(1.0, 1.0, 1.0, 0.0), duration)->set_ease(tween_ease_type)->set_trans(tween_transition_type);
+    new_tween->tween_property(child, NodePath("position"), child->get_position() + exiting_offset, duration)->set_ease(tween_ease_type)->set_trans(tween_transition_type);
+    new_tween->tween_property(child, NodePath("modulate"), Color(1.0, 1.0, 1.0, 0.0), duration)->set_ease(tween_ease_type)->set_trans(tween_transition_type);
 #endif
-        new_tween->connect("finished_or_killed", callable_mp(static_cast<Node*>(child), &Node::queue_free));
-        return new_tween;
-    }
-    return Ref<YTweenWrap>();
+    new_tween->connect("finished", callable_mp(static_cast<Node*>(child), &Node::queue_free));
+    return new_tween;
 }
 
 void BoxContainer3D::_validate_property(PropertyInfo &p_property) const {

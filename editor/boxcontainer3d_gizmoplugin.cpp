@@ -62,11 +62,7 @@ void BoxContainer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
     lines.push_back(Vector3(-size.x/2,  size.y/2, -size.z/2)); // 3
     lines.push_back(Vector3(-size.x/2,  size.y/2,  size.z/2)); // 7
 
-    // Create the gizmo
-    Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
-    material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-    material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-    material->set_albedo(Color(0.8, 0.8, 0.8, 0.5));
+    Ref<Material> material = get_material("main", p_gizmo);
 
     p_gizmo->add_lines(lines, material, false, Color(0.8, 0.8, 0.8, 0.5));
 }

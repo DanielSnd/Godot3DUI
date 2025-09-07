@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/3d/visual_instance_3d.h"
+#include "control3D.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
 #include "core/math/rect2.h"
@@ -59,8 +59,8 @@
 #include "editor/richtextlabel3d_gizmo_plugin.h"
 #endif
 
-class RichTextLabel3D : public GeometryInstance3D {
-	GDCLASS(RichTextLabel3D, GeometryInstance3D);
+class RichTextLabel3D : public Control3D {
+	GDCLASS(RichTextLabel3D, Control3D);
 
 public:
 	enum DrawFlags {

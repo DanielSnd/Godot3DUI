@@ -1,16 +1,16 @@
 #ifndef YBOX_CONTAINER_3D_H
 #define YBOX_CONTAINER_3D_H
 
-#include "scene/3d/node_3d.h"
-#include "ytween.h"
+#include "control3D.h"
+#include "scene/animation/tween.h"
 #ifdef TOOLS_ENABLED
 #include "editor/settings/editor_settings.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/boxcontainer3d_gizmoplugin.h"
 #endif
 
-class BoxContainer3D : public Node3D {
-    GDCLASS(BoxContainer3D, Node3D);
+class BoxContainer3D : public Control3D {
+    GDCLASS(BoxContainer3D, Control3D);
 
 public:
     enum AlignmentMode {
@@ -106,7 +106,7 @@ public:
     void set_tween_transition_type(Tween::TransitionType p_type);
     Tween::TransitionType get_tween_transition_type() const;
 
-    Ref<YTweenWrap> animated_free_child(Node3D* child, Vector3 exiting_offset, float duration);
+    Ref<Tween> animated_free_child(Node3D* child, Vector3 exiting_offset, float duration);
 
     void set_vertical(bool p_vertical);
     bool is_vertical() const;
