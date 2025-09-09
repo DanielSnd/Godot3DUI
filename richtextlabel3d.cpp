@@ -387,7 +387,7 @@ float RichTextLabel3D::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Fo
 					table->columns[i].width = 0;
 				}
 
-				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
+				const int available_width = p_width - table_h_separation * (col_count - 1);
 				int base_column_width = available_width / col_count;
 
 				for (Item *E : table->subitems) {
@@ -605,7 +605,7 @@ float RichTextLabel3D::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Fon
 					table->columns[i].width = 0;
 				}
 				// Compute minimum width for each cell.
-				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
+				const int available_width = p_width - table_h_separation * (col_count - 1);
 				int base_column_width = available_width / col_count;
 				int idx = 0;
 				for (Item *E : table->subitems) {
@@ -693,7 +693,7 @@ void RichTextLabel3D::_set_table_size(ItemTable *p_table, int p_available_width)
 	// Compute available width and total ratio (for expanders).
 	int total_ratio = 0;
 	int remaining_width = p_available_width;
-	p_table->total_width = theme_cache.table_h_separation;
+	p_table->total_width = table_h_separation;
 
 	for (int i = 0; i < col_count; i++) {
 		remaining_width -= p_table->columns[i].min_width;
@@ -712,7 +712,7 @@ void RichTextLabel3D::_set_table_size(ItemTable *p_table, int p_available_width)
 			p_table->columns[i].width += p_table->columns[i].expand_ratio * remaining_width / total_ratio;
 		}
 		if (i != col_count - 1) {
-			p_table->total_width += p_table->columns[i].width + theme_cache.table_h_separation;
+			p_table->total_width += p_table->columns[i].width + table_h_separation;
 		} else {
 			p_table->total_width += p_table->columns[i].width;
 		}
@@ -762,7 +762,7 @@ void RichTextLabel3D::_set_table_size(ItemTable *p_table, int p_available_width)
 	p_table->rows_no_padding.clear();
 	p_table->rows_baseline.clear();
 
-	Vector2 offset = Vector2(theme_cache.table_h_separation * 0.5, theme_cache.table_v_separation * 0.5).floor();
+	Vector2 offset = Vector2(table_h_separation * 0.5, table_v_separation * 0.5).floor();
 	float row_height = 0.0;
 	float row_top_padding = 0.0;
 	float row_bottom_padding = 0.0;
@@ -813,12 +813,12 @@ void RichTextLabel3D::_set_table_size(ItemTable *p_table, int p_available_width)
 			offset.x = Math::floor(theme_cache.table_h_separation * 0.5);
 			float row_contents_height = row_height;
 			row_height += row_top_padding + row_bottom_padding;
-			row_height += theme_cache.table_v_separation;
+			row_height -= table_v_separation;
 			p_table->total_height += row_height;
 			offset.y += row_height;
 			p_table->rows.push_back(row_height);
 			p_table->rows_no_padding.push_back(row_contents_height);
-			p_table->rows_baseline.push_back(p_table->total_height - row_height + row_baseline + Math::floor(theme_cache.table_v_separation * 0.5));
+			p_table->rows_baseline.push_back(p_table->total_height - row_height + row_baseline - Math::floor(table_v_separation * 0.5));
 			for (const List<Item *>::Element *F = prev; F; F = F->next()) {
 				ItemFrame *in_frame = static_cast<ItemFrame *>(F->get());
 				for (int i = 0; i < (int)in_frame->lines.size(); i++) {
@@ -839,7 +839,7 @@ void RichTextLabel3D::_set_table_size(ItemTable *p_table, int p_available_width)
 	// Recalculate total width.
 	p_table->total_width = 0;
 	for (int i = 0; i < col_count; i++) {
-		p_table->total_width += p_table->columns[i].width_with_padding + theme_cache.table_h_separation;
+		p_table->total_width += p_table->columns[i].width_with_padding + table_h_separation;
 	}
 }
 
@@ -990,7 +990,7 @@ void RichTextLabel3D::_generate_rich_glyph_surface( const Glyph &p_glyph, Vector
         if (!surfaces.has(key)) {
             SurfaceData surf;
             surf.material = RenderingServer::get_singleton()->material_create();
-            print_line("Creating material");
+            // print_line("Creating material");
             // Set material defaults (similar to Label3D)
             RS::get_singleton()->material_set_param(surf.material, "albedo", Color(1, 1, 1, 1));
             RS::get_singleton()->material_set_param(surf.material, "specular", 0.5);
@@ -1256,7 +1256,7 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 		double upos = TS->shaped_text_get_underline_position(rid);
 		double uth = TS->shaped_text_get_underline_thickness(rid);
 
-		print_line(vformat("Line %d. Ascent: %f Descent: %f current offset is %.2f", line, l_ascent, TS->shaped_text_get_descent(rid) * pixel_size, off.y));
+		// print_line(vformat("Line %d. Ascent: %f Descent: %f current offset is %.2f", line, l_ascent, TS->shaped_text_get_descent(rid) * pixel_size, off.y));
 		off.y -= l_ascent;
 
 		const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
@@ -1314,12 +1314,12 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 								Color odd_row_bg = Color(0, 0, 0, 0);
 								Color even_row_bg = Color(0, 0, 0, 0);
 								Color border = Color(0, 0, 0, 0);
-								float h_separation = 0.0f;
-								float v_separation = 0.0f;
+								float h_separation = table_h_separation;
+								float v_separation = table_v_separation;
 
 								int col_count = table->columns.size();
 								int row_count = table->rows.size();
-
+								
 								int idx = 0;
 								for (Item *E : table->subitems) {
 									ItemFrame *frame = static_cast<ItemFrame *>(E);
@@ -1333,6 +1333,7 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 										if (rtl) {
 											coff.x = rect.size.width - table->columns[col].width - coff.x;
 										}
+										coff.y *= -1;
 										
 										// Draw cell background
 										if (frame->has_image_background) {
@@ -1340,22 +1341,26 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 											Color img_bg_color = row % 2 == 0 ? (frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg) : (frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg);
 											
 											if (img_bg != nullptr && img_bg->image.is_valid()) {
-												Rect2 img_rect = Rect2((p_ofs) + rect.position + (off) + coff - (frame->padding.position * Vector2(1, -1)) - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y));
+												Rect2 img_rect = Rect2((p_ofs) + rect.position + (off) + coff - (frame->padding.position) - Vector2(h_separation * 0.5, v_separation * -0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y));
 												
 												if (frame->max_size_over.y > 0 && img_rect.size.y > frame->max_size_over.y) {
+													img_rect.position.y -= (img_rect.size.y - frame->max_size_over.y) * 0.5;
 													img_rect.size.y = frame->max_size_over.y;
 												}
 
 												if (img_bg->keep_aspect_center) {
+													float original_width = img_rect.size.x;
 													img_rect.size.x = img_rect.size.y * img_bg->image->get_size().x / img_bg->image->get_size().y;
+													
+													img_rect.position.x += (original_width - img_rect.size.x) * 0.5;
 												}
 
 												if (img_bg->has_rect_offset) {
 													img_rect.position += img_bg->rect_offset.position;
 													img_rect.size += img_bg->rect_offset.size;
 												}
-												Vector3 extra_offset = l_extra_offset + Vector3(0, 0, 0);
-												Vector3 extra_rotation = l_extra_rotation + Vector3(0, 0, 0);
+												Vector3 extra_offset = l_extra_offset + frame->offset;
+												Vector3 extra_rotation = l_extra_rotation + frame->rotation;
 												_generate_image_surface(img_bg->image, img_rect.position, img_rect.size, extra_offset, extra_rotation, img_bg_color, outline_render_priority);
 											}
 										} else {
@@ -1367,7 +1372,12 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 												bg_color = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
 											}
 											if (bg_color.a > 0.0) {
-												Rect2 cell_rect = Rect2((p_ofs) + rect.position + (off) + coff - (frame->padding.position * Vector2(1, -1)) - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y));
+												Rect2 cell_rect = Rect2((p_ofs) + rect.position + (off) + coff - (frame->padding.position) - Vector2(h_separation * 0.5, v_separation * -0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y));
+
+												if (frame->max_size_over.y > 0 && cell_rect.size.y > frame->max_size_over.y) {
+													cell_rect.position.y -= (cell_rect.size.y - frame->max_size_over.y) * 0.5;
+													cell_rect.size.y = frame->max_size_over.y;
+												}
 												Vector3 extra_offset = l_extra_offset + frame->offset;
 												Vector3 extra_rotation = l_extra_rotation + frame->rotation;
 												_generate_rect_surface(cell_rect.position, cell_rect.size, extra_offset, extra_rotation, bg_color, outline_render_priority, frame->thickness, frame->radius.x, frame->radius.y, frame->bevel_segments);
@@ -1377,7 +1387,13 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 										// Draw cell border
 										Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
 										if (bc.a > 0.0) {
-											Rect2 cell_rect = Rect2((p_ofs) + rect.position + (off) + coff - (frame->padding.position * Vector2(1, -1)) - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y));
+											Rect2 cell_rect = Rect2((p_ofs) + rect.position + (off) + coff - (frame->padding.position) - Vector2(h_separation * 0.5, v_separation * -0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y));
+
+											if (frame->max_size_over.y > 0 && cell_rect.size.y > frame->max_size_over.y) {
+												cell_rect.position.y -= (cell_rect.size.y - frame->max_size_over.y) * 0.5;
+												cell_rect.size.y = frame->max_size_over.y;
+											}
+
 											Vector3 extra_offset = l_extra_offset + frame->offset;
 											Vector3 extra_rotation = l_extra_rotation + frame->rotation;
 											_generate_border_surface(cell_rect.position, cell_rect.size, extra_offset, extra_rotation, bc, outline_render_priority);
@@ -1403,7 +1419,7 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 										if (frame->lines.size() > 0) {
 											// Get the last line's offset and add its actual height
 											int last_line_idx = frame->lines.size() - 1;
-											total_text_height = frame->lines[last_line_idx].offset.y;
+											total_text_height = frame->lines[last_line_idx].offset.y - frame->lines[0].offset.y;
 											
 											// Add the height of the last line itself
 											// Use a single line's actual rendered height
@@ -1420,14 +1436,14 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 									for (int j = 0; j < (int)frame->lines.size(); j++) {
 										Vector2 line_offset = Vector2(0, frame->lines[j].offset.y);
 										if (frame->vertical_align_center) {
-											line_offset.y -= vertical_center_offset;
+											line_offset.y += vertical_center_offset;
 										} else {
-											line_offset.y -= frame->margins.position.y;
+											line_offset.y += frame->margins.position.y;
 										}
 
 										Vector3 child_extra_offset = l_extra_offset + frame->offset + Vector3(0.0f, 0.0f, cell_children_depth * pixel_size);
 										Vector3 child_extra_rotation = l_extra_rotation + frame->rotation + Vector3(0.0f, 0.0f, 0.0f);
-										_draw_line(frame, j, p_ofs + off + margins_rect.position + line_offset, child_extra_offset, child_extra_rotation, margins_rect.size.x, 0, true, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
+										_draw_line(frame, j, p_ofs + off + margins_rect.position - line_offset, child_extra_offset, child_extra_rotation, margins_rect.size.x, 0, true, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
 									}
 
 									idx++;
@@ -1589,7 +1605,7 @@ int RichTextLabel3D::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 		}
 
 		r_processed_glyphs = processed_glyphs_step;
-		print_line(vformat("Ending draw Line %d. Descent: %f current offset is %.2f", line, TS->shaped_text_get_descent(rid) * pixel_size, off.y));
+
 		off.y -= (TS->shaped_text_get_descent(rid) + line_spacing);
 		if (has_visible_chars) {
 			line_count++;
@@ -1654,9 +1670,22 @@ void RichTextLabel3D::_generate_image_surface(const Ref<Texture2D> &p_texture, c
     // Scale position and size by pixel_size
     Vector2 pos = p_position * pixel_size;
     Vector2 size = p_size * pixel_size;
-    
+    // Transform extra_offset by rotation if rotation is applied
+    Vector3 transformed_offset = extra_offset;
+    if (!extra_rotation.is_zero_approx()) {
+        Vector3 extra_rotation_rad = extra_rotation * Math::PI / 180.0;
+        
+        // Create rotation matrix and apply to offset
+        Basis rotation_basis;
+        rotation_basis = rotation_basis.rotated(Vector3(1, 0, 0), extra_rotation_rad.x);
+        rotation_basis = rotation_basis.rotated(Vector3(0, 1, 0), extra_rotation_rad.y);
+        rotation_basis = rotation_basis.rotated(Vector3(0, 0, 1), extra_rotation_rad.z);
+        
+        transformed_offset = rotation_basis.xform(extra_offset);
+    }
     // Resize arrays
-    s.mesh_vertices.resize((s.offset + 1) * 4);
+	int total_vert_count = (s.offset + 1) * 4;
+    s.mesh_vertices.resize(total_vert_count);
     s.mesh_normals.resize((s.offset + 1) * 4);
     s.mesh_tangents.resize((s.offset + 1) * 16);
     s.mesh_colors.resize((s.offset + 1) * 4);
@@ -1667,6 +1696,38 @@ void RichTextLabel3D::_generate_image_surface(const Ref<Texture2D> &p_texture, c
     s.mesh_vertices.write[(s.offset * 4) + 2] = Vector3(pos.x + size.x, pos.y - size.y, s.z_shift); // Bottom-right
     s.mesh_vertices.write[(s.offset * 4) + 1] = Vector3(pos.x + size.x, pos.y, s.z_shift);         // Top-right
     s.mesh_vertices.write[(s.offset * 4) + 0] = Vector3(pos.x, pos.y, s.z_shift);                 // Top-left
+
+	// Apply rotation and offset to all vertices
+    if (!extra_rotation.is_zero_approx()) {
+        Vector3 extra_rotation_rad = extra_rotation * Math::PI / 180.0;
+        
+        for (int i = 0; i < total_vert_count; i++) {
+            Vector3 &vertex = s.mesh_vertices.write[i];
+            
+            // Rotate around X axis
+            float y = vertex.y;
+            float z = vertex.z;
+            vertex.y = y * Math::cos(extra_rotation_rad.x) - z * Math::sin(extra_rotation_rad.x);
+            vertex.z = y * Math::sin(extra_rotation_rad.x) + z * Math::cos(extra_rotation_rad.x);
+            
+            // Rotate around Y axis
+            float x = vertex.x;
+            z = vertex.z;
+            vertex.x = x * Math::cos(extra_rotation_rad.y) + z * Math::sin(extra_rotation_rad.y);
+            vertex.z = -x * Math::sin(extra_rotation_rad.y) + z * Math::cos(extra_rotation_rad.y);
+            
+            // Rotate around Z axis
+            x = vertex.x;
+            y = vertex.y;
+            vertex.x = x * Math::cos(extra_rotation_rad.z) - y * Math::sin(extra_rotation_rad.z);
+            vertex.y = x * Math::sin(extra_rotation_rad.z) + y * Math::cos(extra_rotation_rad.z);
+        }
+    }
+    
+    // Apply transformed offset to all vertices
+    for (int i = 0; i < total_vert_count; i++) {
+        s.mesh_vertices.write[i] += transformed_offset;
+    }
 
     // Set normals, tangents, colors, and UVs
     for (int i = 0; i < 4; i++) {
@@ -2430,7 +2491,7 @@ void RichTextLabel3D::_draw() {
 	{
 	// while (ofs.y < size.height - v_limit && from_line < to_line) {
 		MutexLock lock(main->lines[from_line].text_buf->get_mutex());
-		print_line(vformat("Drawing line %d. Ofs.y: %f to line %d", from_line, ofs.y, to_line));
+		// print_line(vformat("Drawing line %d. Ofs.y: %f to line %d", from_line, ofs.y, to_line));
 		int drawn_lines = _draw_line(main, from_line, ofs, extra_offset, extra_rotation, text_rect.size.x, vsep, false, modulate, outline_size, outline_modulate, outline_modulate, 0.0f, shadow_ofs, processed_glyphs);
 		visible_line_count += drawn_lines;
 		if (drawn_lines > 0) {
@@ -2458,7 +2519,7 @@ void RichTextLabel3D::_draw() {
 			break;
 	}
 
-	print_line(vformat("Drawing mesh. Surfaces: %d visible line count: %d", surfaces.size(), visible_line_count));
+	// print_line(vformat("Drawing mesh. Surfaces: %d visible line count: %d", surfaces.size(), visible_line_count));
 	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
 		Array mesh_array;
 		mesh_array.resize(RS::ARRAY_MAX);
@@ -6402,6 +6463,11 @@ void RichTextLabel3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_children_depth", "depth"), &RichTextLabel3D::set_cell_children_depth);
 	ClassDB::bind_method(D_METHOD("get_cell_children_depth"), &RichTextLabel3D::get_cell_children_depth);
 
+	ClassDB::bind_method(D_METHOD("set_table_h_separation", "h_separation"), &RichTextLabel3D::set_table_h_separation);
+	ClassDB::bind_method(D_METHOD("get_table_h_separation"), &RichTextLabel3D::get_table_h_separation);
+	ClassDB::bind_method(D_METHOD("set_table_v_separation", "v_separation"), &RichTextLabel3D::set_table_v_separation);
+	ClassDB::bind_method(D_METHOD("get_table_v_separation"), &RichTextLabel3D::get_table_v_separation);
+
 	ClassDB::bind_method(D_METHOD("set_line_spacing", "line_spacing"), &RichTextLabel3D::set_line_spacing);
 	ClassDB::bind_method(D_METHOD("get_line_spacing"), &RichTextLabel3D::get_line_spacing);
 	
@@ -6537,6 +6603,8 @@ void RichTextLabel3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "table_h_separation", PROPERTY_HINT_RANGE, "0,5,0.01"), "set_table_h_separation", "get_table_h_separation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "table_v_separation", PROPERTY_HINT_RANGE, "0,5,0.01"), "set_table_v_separation", "get_table_v_separation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
 
@@ -6679,6 +6747,25 @@ void RichTextLabel3D::set_outline_depth(float p_depth) {
 	}
 }
 
+
+void RichTextLabel3D::set_table_h_separation(float p) {
+	if (table_h_separation != p) {
+		table_h_separation = p;
+		queue_redraw();
+	}
+}
+void RichTextLabel3D::set_table_v_separation(float p) {
+	if (table_v_separation != p) {
+		table_v_separation = p;
+		queue_redraw();
+	}
+}
+float RichTextLabel3D::get_table_h_separation() {
+	return table_h_separation;
+}
+float RichTextLabel3D::get_table_v_separation() {
+	return table_v_separation;
+}
 float RichTextLabel3D::get_outline_depth() const {
 	return outline_depth;
 }

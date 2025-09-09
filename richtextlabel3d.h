@@ -240,7 +240,9 @@ private:
 	int outline_size = 12;
 	float outline_depth = 0.15f;
 	float cell_children_depth = 0.15f;
-
+	float table_h_separation = 0.0f;
+	float table_v_separation = 0.0f;
+	
 
 	Color modulate = Color(1, 1, 1, 1);
 	Color outline_modulate = Color(0, 0, 0, 1);
@@ -261,6 +263,11 @@ private:
 	void set_texture_filter(StandardMaterial3D::TextureFilter p_filter);
 	StandardMaterial3D::TextureFilter get_texture_filter() const;
 
+	void set_table_h_separation(float p);
+	void set_table_v_separation(float p);
+	float get_table_h_separation();
+	float get_table_v_separation();
+	
 	void set_draw_flag(DrawFlags p_flag, bool p_enable);
 	bool get_draw_flag(DrawFlags p_flag) const;
 
