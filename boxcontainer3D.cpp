@@ -166,6 +166,9 @@ AABB BoxContainer3D::get_child_bounds(Node3D *p_child) const {
 
 void BoxContainer3D::_resort() {
     pending_sort = false;
+    if (positioning == POSITION_MANUAL) {
+        return;
+    }
     struct ChildInfo {
         Node3D* node;
         Vector3 original_scale;
